@@ -1,0 +1,36 @@
+.pace {
+  -webkit-pointer-events: none;
+  pointer-events: none;
+
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+
+  opacity: 0;
+}
+
+
+.pace-running > .pace {
+    opacity: 1;
+    transition: opacity .5s ease;
+}
+.pace-done > .pace {
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+.pace .pace-progress {
+  background: #23aaff;
+  box-shadow: 0 0 10px #2dacfc;
+  position: fixed;
+  z-index: 2000;
+  top: 0;
+  right: 100%;
+  width: 100%;
+  height: 2px;
+}
+
+@keyframes pace-inactive-animation {
+    from { opacity: 100%; }
+    to { opacity: 0%; }
+}

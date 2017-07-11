@@ -1,0 +1,118 @@
+<html>
+    <head>
+        <title>Hello, World!</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- JQuery -->
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="css/bootstrap.min.css"/>
+        <link rel="stylesheet" href="css/pace.css"/>
+
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="js/pace.min.js"></script>
+        <script src="js/utils.js"></script>
+        <script src="js/app.js"></script>
+
+        <link rel="stylesheet" href="css/style.css"/>
+    </head>
+    <body>
+        <div class="container">
+            <br/>
+            <div class="jumbotron" align="center">
+                <h2>theo5970.com</h2>
+                <p>- 익명게시판 -</p>
+                <p>들어오신 것에 대해 ㅁㄴㅇㄹ합니다</p>
+
+                <%
+                    let progress_value = (article_count / 10000000.0) * 100;
+                %>
+                <small>현재 게시판 사용률: <%= progress_value.toFixed(3) %>%</small><br/>
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" aria-valuenow="<%= progress_value %>" aria-valuemin="0" aria-valuemax="100" style="width: <%= progress_value %>%; ">
+                    </div>
+                </div>
+            </div>
+            <hr/>
+            <button class="btn btn-success" onclick="window.location.href='/all'">모두 보기</button>
+            <hr/>
+            <div class="alert alert-success" id="success_inpost" style="display: none;">
+                <h4>성공!</h4>
+                <p>글이 성공적으로 업로드되었습니다.</p>
+            </div>
+            <div class="alert alert-warning" id="error_inpost" style="display: none;">
+                <button type="button" class="close" onclick="hideDiv('#error_inpost')">&times;</button>
+                <h4>오류</h4>
+                <p></p>
+            </div>
+            <input type="text" id="titleText" class="form-control" placeholder="Title"/></input>
+            <textarea id="contextText" class="form-control" placeholder="Context"></textarea>
+            <br/>
+            <button class="btn btn-primary" onclick="postArticle()"><span class="glyphicon glyphicon-pencil"></span> Post</button>
+            <hr/>
+            <% if (article_count > 0) { %>
+            <caption>글 수: <%= article_count %>개</caption>
+            
+            <table class="table table-hover">
+                <thead>
+                    <th class="col-md-1 col-xs-2"><center>No.</center></th>
+                    <th class="col-md-6 col-xs-5">Title</th>
+                    <th class="col-md-4 col-xs-3"><span class="glyphicon glyphicon-time"></span> Time</th>
+                    <th class="col-md-2 col-xs-1"><span class="glyphicon glyphicon-thumbs-up"></span> Likes</th>
+                </thead>
+                <tbody>
+                    <% for (let i=0; i<notices.length; i++) { 
+                        let article = notices[i];
+                    %>
+                    <tr class="dont-break-out">
+                        <td><center><span class="label label-info">공지</span></center></td>
+                        <td>
+                             <a href="/<%=article.id%>"><%= article.title %>
+                                <% if (article.comments.length > 0) { %>
+                                <span class="badge"><%= article.comments.length %></span>
+                                <% } %>
+                            </a>
+                        </td>
+                        <%
+                            let article_datetime = new Date(article.time);
+                            let now_datetime = new Date();
+                            let date_string = subjective_time(article_datetime, now_datetime);
+                        %>
+                        <td><%= date_string %></td>
+                        <td><%= article.likes %></td>
+                    </tr>
+                    <% } %>
+                    <% for (let i=0; i<articles.length; i++) { 
+                        let article = articles[i];
+                    %>
+                    <tr class="dont-break-out">
+                        <td><center>#<%= article.id %></center></td>
+                        <td>
+                            <a href="/<%=article.id%>"><%= article.title %>
+                                <% if (article.comments.length > 0) { %>
+                                <span class="badge"><%= article.comments.length %></span>
+                                <% } %>
+                            </a>
+                        </td>
+                        <%
+                            let article_datetime = new Date(article.time);
+                            let now_datetime = new Date();
+                            let date_string = subjective_time(article_datetime, now_datetime);
+                        %>
+                        <td><%= date_string %></td>
+                        <td><%= article.likes %></td>
+                    </tr>
+                    <% } %>
+                </tbody>
+            </table>
+            
+            <% } else { %>
+            <p> 등록된 글이 없습니다. 여러분이 올려주세요!</p>
+            <% } %>
+
+            <center>
+                <small>Made by theo5970</small><br/>
+                <small>Powered by node.js + express.js</small>
+            </center>
+        </div>
+    </body>
+</html>

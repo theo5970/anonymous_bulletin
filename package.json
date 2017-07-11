@@ -1,0 +1,18 @@
+{
+  "name": "express_helloworld",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "theo5970",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "clusterhub": "^0.2.10",
+    "ejs": "^2.5.6",
+    "express": "^4.15.3",
+    "mongoose": "^4.10.8"
+  },
+  "description": ""
+}

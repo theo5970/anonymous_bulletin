@@ -1,0 +1,28 @@
+.dont-break-out {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+.gray-text {
+    color: gray;
+}
+
+a {
+    color: black;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #666;
+    text-decoration: underline;
+}
+
+span {
+    vertical-align: middle;
+}
+
+.table tbody > tr > td{
+    vertical-align: middle;
+}

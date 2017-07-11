@@ -1,0 +1,146 @@
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- JQuery -->
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="css/bootstrap.min.css"/>
+        <link rel="stylesheet" href="css/style.css"/>
+        <link rel="stylesheet" href="css/pace.css"/>
+        
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="js/pace.min.js"></script>
+        <script src="js/article_app.js"></script>
+        <% 
+            let browser_title = "";
+            if (isFindMulti) {
+                browser_title = "여러 개 보기";
+            } else {
+                browser_title = articles[0].title;
+            }
+        %>
+        <title><%= browser_title %></title>
+    </head>
+    <body>
+        <div class="container">
+        <!-- Small modal -->
+
+        <div id="error_incomment_modal" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-sm" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">오류</h4>
+                    </div>
+                    <div class="modal-body">
+                        내용이 너무 짧거나 깁니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+            <br/>
+            <button class="btn btn-primary" onclick="location.href='/'">돌아가기</button>
+            <hr/>
+            <% if (isFindMulti) { %>
+            <ul class="pagination">
+                <% let condition1 = (current_page > 1); %>
+                <li class="<%= condition1 ? '' : 'disabled'%>">
+                    <a href="<%= condition1 ? ('/all?page='+start_view) : ''%>" aria-label="Previous" data-toggle="tooltip" data-placement="top" title="이전 페이지">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            <% for (let i=start_view; i<=end_view; i++) { %>
+                <% if (i <= max_pages && i > 0) { %>
+                <li class="<%= (i == current_page) ? 'active' : 'disable'%>"><a href="<%='/all?page='+i%>"><%= i %></a></li>
+                <% } %>
+            <% } %>
+                <% current_page = parseInt(current_page) %>
+                <% let condition2 = (current_page + 1) <= max_pages %>
+                <li class="<%= condition2 ? '' : 'disabled'%>">
+                    <a href="<%=condition2 ? ('/all?page='+end_view) : ''%>" aria-label="Next"  data-toggle="tooltip" data-placement="top" title="다음 페이지">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+            <% } %>
+            <% for (let i=0; i<articles.length; i++) {
+                let article = articles[i]; 
+                let date = new Date(article.time);
+                let date_string = dateToString(date, "YYYY/MM/DD HH:mm:ss");
+            %>
+            <div class="panel panel-default">
+                <div class="panel-body dont-break-out">
+                    <h4>
+                        <small>#<%= article.id%>.</small> 
+                        <%= article.title %>
+                    </h4>
+                    <% if (article.type === 1) { %>
+                    <label class="label label-primary"><span class="glyphicon glyphicon-pushpin"></span> 공지</label>
+                    <% } %>
+                    <span class="label label-default"><span class="glyphicon glyphicon-time"></span> <%= date_string %></span>
+                    
+                    <hr/>
+                    <br/>
+                    <%- article.context.split("\n").join("<br/>") %><br/>
+                    <hr/>
+                    <%
+                        let active = "";
+                        if (self_likes.indexOf(article._id) !== -1) {
+                            active = "active";
+                        }
+                    %>
+                    <button class="btn btn-success btn-lg <%= active %>" id="likebtn_<%= article._id%>" onclick="doLike('<%= article._id%>')" title="좋아요"><span class="glyphicon glyphicon-thumbs-up"></span> <span id="likes_count"><%= article.likes %></span></button>
+                    
+                    <br/>
+                    <%
+                        let comment_count = article.comments.length;
+                        let comment_message = (comment_count > 0) ? ("댓글 "+comment_count+"개") : "댓글이 필요합니다!";
+                    %>
+                    <strong><%= comment_message %></strong>
+                    <ul class="list-group">
+                        <% for (let i=0; i<comment_count; i++) { 
+                            let comment = article.comments[i];
+                            let date = new Date(comment.time);
+                            let date_string = dateToString(date, "YYYY/MM/DD HH:mm:ss");
+                        %>
+                        <li class="list-group-item">
+                            <%= comment.context%><br/><small style="color: #ccc; "><%= date_string %></small>
+                        </li>
+                        <% } %>
+                        <li class="list-group-item">
+                            <div class="input-group">
+                                <input type="text" id="<%= article._id %>_comment" class="form-control" placeholder="댓글을 입력해주세요"></input>
+                                <span class="input-group-btn">
+                                    <button class="btn btn-primary" onclick="postComment('<%= article._id %>')">Post</button>
+                                </span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <% } %>
+            <% if (isFindMulti) { %>
+            <ul class="pagination">
+                <% let condition1 = (current_page > 1); %>
+                <li class="<%= condition1 ? '' : 'disabled'%>">
+                    <a href="<%= condition1 ? ('/all?page='+start_view) : ''%>" aria-label="Previous" data-toggle="tooltip" data-placement="top" title="이전 페이지">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            <% for (let i=start_view; i<=end_view; i++) { %>
+                <% if (i <= max_pages && i > 0) { %>
+                <li class="<%= (i == current_page) ? 'active' : 'disable'%>"><a href="<%='/all?page='+i%>"><%= i %></a></li>
+                <% } %>
+            <% } %>
+                <% current_page = parseInt(current_page) %>
+                <% let condition2 = (current_page + 1) <= max_pages %>
+                <li class="<%= condition2 ? '' : 'disabled'%>">
+                    <a href="<%=condition2 ? ('/all?page='+end_view) : ''%>" aria-label="Next"  data-toggle="tooltip" data-placement="top" title="다음 페이지">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+            <% } %>
+        </div>
+    </body>
+</html>
