@@ -1,5 +1,4 @@
-module.exports = function(app, Article)
-{
+module.exports = (app, Article) => {
 	// app: Express 앱
 	// Article: MongoDB Custom Schema
 	
@@ -10,8 +9,6 @@ module.exports = function(app, Article)
     var xss = require("../utils/xss");
     var CryptoJS = require("crypto-js");
     var subjective_time = require("../utils/subjective_time");
-
-    var count_404 = 0;
 
     // 요청에서 클라이언트 IP 얻기
     function getClientIP(req) {
@@ -29,7 +26,8 @@ module.exports = function(app, Article)
     // 클라이언트에게 보내는 글 리스트 최적화
     // IP를 글 객체에서 없애고 좋아요 IP 리스트를 갯수로 치환
     function optimizeList(article_list) {
-        for (let i=0; i<article_list.length; i++) {
+        let article_count = article_list.length;
+        for (let i=0; i<article_count; i++) {
             let article = article_list[i];
 
             let likes_count = article.likes.length;
@@ -42,7 +40,9 @@ module.exports = function(app, Article)
     // article.ejs에서 자신이 누른 좋아요 버튼을 active하기 위해 사용
     function getSelfLikedList(article_list, self_ip) {
         let result = [];
-        for (let i=0; i<article_list.length; i++) {
+        let article_count = article_list.length;
+
+        for (let i=0; i<article_count; i++) {
             let article = article_list[i];
             if (article.likes.indexOf(self_ip) !== -1) {
                 result.push(article._id);
@@ -51,36 +51,39 @@ module.exports = function(app, Article)
         return result;
     }
 
-    app.all('*', function(req, res, next){
+    app.all('*', (req, res, next) => {
         process.send("#" + process.pid + " had received response.");
         next();
     });
     // 메인 홈 요청
-    app.get("/", function(req, res, next){
+    app.get("/", (req, res, next) => {
         let article_count = 0;
         let normalArticles = [];    // 일반 게시물
         let noticeArticles = [];    // 공지사항 게시물
 
-        Article.count().exec(function(err, count){
+        Article.count().exec((err, count) => {
             if (err) {
                 console.log(err);
             }
+
             article_count = count;
-            Article.find().sort({id: -1}).limit(config.mainpage_limit).exec(function(err, list){
+
+            Article.find().sort({id: -1})
+            .limit(config.mainpage_limit).exec((err, list) => {
                 if (err) {
                     console.log(err);
                 }
                 normalArticles = list;
                 second();  // 두번째로 실행되는 함수
-                
             });
         });
-        let second = function(){
+
+        let second = () => {
             // type=1(공지사항)인 게시물을 찾아서 정렬
             Article.aggregate([
                 {$sort: {type: -1}},
                 {$match: {type: 1.0}}
-            ]).exec(function(err, list){
+            ]).exec((err, list) => {
                 noticeArticles = list;
                 if (!noticeArticles) {
                     noticeArticles = [];
@@ -105,7 +108,7 @@ module.exports = function(app, Article)
     });
 
     // 글 올리기 요청
-    app.post("/post", function(req, res, next){
+    app.post("/post", (req, res, next) => {
         // post 데이터
         let data = req.body;
 
@@ -119,13 +122,13 @@ module.exports = function(app, Article)
         let func;
 
         // 글 수 계산 (모두 검색)
-        Article.count().exec({}, function(err, count){
+        Article.count().exec({}, (err, count) => {
             article_count = count;
             func();
         });
 
         // 글 수를 알아내고 실행될 함수
-        func = function() {
+        func = () => {
             // 새로운 글 객체
             let new_article = new Article({
                 id: article_count + 1,
@@ -173,11 +176,11 @@ module.exports = function(app, Article)
 
             res.send(result);
             next();
-        }
+        };
     });
 
     // 글에 좋아요 요청
-    app.post("/post_like", function(req, res, next) {
+    app.post("/post_like", (req, res, next) => {
         let result = {
             isSuccess: true,
             count: 0,
@@ -185,7 +188,7 @@ module.exports = function(app, Article)
         };
         let dbid = req.body._id;
               
-        Article.findOne({_id: dbid}, function(err, article){
+        Article.findOne({_id: dbid}, (err, article) => {
             let client_ip = CryptoJS.SHA256(getClientIP(req)).toString();   // IP 암호화
             let article_ip = CryptoJS.SHA256(article.ip).toString();        // IP 암호화
             let ip_list = article.likes;                                    // 게시글에 좋아요를 누른 IP들
@@ -200,7 +203,7 @@ module.exports = function(app, Article)
             };
 
             // 게시글 좋아요 업데이트
-            Article.update({_id: dbid}, updates, {multi: true}, function(err){
+            Article.update({_id: dbid}, updates, {multi: true}, (err) => {
                 if (err) {
                     console.log(err);
                 }
@@ -221,7 +224,7 @@ module.exports = function(app, Article)
     });
 
     // 댓글 달기 요청
-    app.post("/post_comment", function(req, res, next){
+    app.post("/post_comment", (req, res, next) => {
         // 요청 결과
         let result = {
             isSuccess: true, 
@@ -247,7 +250,8 @@ module.exports = function(app, Article)
         }
 
         // 댓글 내용이 너무 짧거나 길다면
-        if (context.length >= config.min_comment_length && context.length <= config.max_comment_length)  {
+        if (context.length >= config.min_comment_length 
+            && context.length <= config.max_comment_length) {
             // 새로운 댓글 객체
             let new_comment = {
                 context: context,
@@ -256,14 +260,14 @@ module.exports = function(app, Article)
 
             // 글 업데이트
             Article.findOneAndUpdate({_id: dbid}, 
-            {$push: // 리스트에 넣는다
+            {$push:        // 리스트에 넣는다
                 {comments: // 댓글에
                     {
                         time: time,         // 시간
                         context: context    // 내용
                     }
                 }
-            }, function(err, comment){  // 결과
+            }, (err, comment) => {          // 결과
                 result.isSuccess = true;
                 res.send(result);
                 next();
@@ -281,7 +285,7 @@ module.exports = function(app, Article)
         
     });
     // 모든 글을 표시하기
-    app.get("/all", function(req, res){
+    app.get("/all", (req, res) => {
         // URL 쿼리 (?pages=n)
         let query = req.query;
 
@@ -311,7 +315,7 @@ module.exports = function(app, Article)
         // 글 개수 세고 
         // 현재/전체 페이지 계산
         Article.count().exec({}, 
-            function(err, articles_count){
+            (err, articles_count) => {
                 // 전체 글 개수
                 length = articles_count;
 
@@ -343,7 +347,7 @@ module.exports = function(app, Article)
             {"$skip": skip_count},
             {"$limit": config.eachpage_count}]
             
-            ).exec(function(err, list){
+            ).exec((err, list) => {
                 if (err) { throw err; }
 
                 // 자신이 좋아요 누른 글 _id 리스트
@@ -370,7 +374,7 @@ module.exports = function(app, Article)
     });
 
     // 해당하는 id의 글만 표시
-    app.get("/:id", function(req, res) {
+    app.get("/:id", (req, res) => {
         // 해시화된 클라이언트 IP
         let client_ip = CryptoJS.SHA256(getClientIP(req)).toString();
         
@@ -381,7 +385,7 @@ module.exports = function(app, Article)
         }
 
         // id에 해당하는 글 찾기
-        Article.find({"id": req.params.id}).exec(function(err, list){
+        Article.find({"id": req.params.id}).exec((err, list) => {
             if (err) { throw err; }
             
             // 리스트가 비어있지 않다면
