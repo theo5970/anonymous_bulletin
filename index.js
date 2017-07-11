@@ -5,10 +5,11 @@ const useSSL = false;
 const config = require("./utils/config");
 
 // 클러스트 사용할 경우
-if (config.useCluster) {
+if (config.use_cluster) {
     // 클러스터 서버 import
     const cluster = require("cluster");
 
+    console.log("Cluster on!");
     // 클러스트 부분
     if (cluster.isMaster) {
         for (let i = 0; i < config.cluster_count; i++) {
@@ -98,7 +99,7 @@ function doSlave() {
             if (config.use_cluster) {
                 process.send("HTTPS server opening... port:"+config.https_port);
             } else {
-                console.send("HTTPS server opening... port:"+config.https_port);
+                console.log("HTTPS server opening... port:"+config.https_port);
             }
         });
     }
