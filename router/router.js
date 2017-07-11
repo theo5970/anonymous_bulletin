@@ -380,7 +380,12 @@ module.exports = (app, Article) => {
         
         // id가 정수가 아니면 오류 리턴
         if (!(/^[0-9]+$/.test(req.params.id))) {
-            res.send("Error");
+            
+            // 좀 참신하게 404 페이지를 표시하기
+            res.render("error.ejs", 
+                {title: "404 NOT FOUND", 
+                context: "지금 너가 찾고 있는 페이지는.. 하늘로 증발했거나 땅으로 떨어졌으리라...     by 누군가"
+            });
             return;
         }
 
@@ -406,9 +411,10 @@ module.exports = (app, Article) => {
                     self_likes: self_likes
                 });
             } else {
+                // 좀 참신하게 404 페이지를 표시하기
                 res.render("error.ejs", 
-                {title: "404 NOT FOUND", 
-                context: "지금 너가 찾고 있는 페이지는.. 하늘로 증발했거나 땅으로 떨어졌으리라...     by 누군가"
+                    {title: "404 NOT FOUND", 
+                    context: "지금 너가 찾고 있는 페이지는.. 하늘로 증발했거나 땅으로 떨어졌으리라...     by 누군가"
                 });
             }
         });

@@ -1,8 +1,10 @@
-var useSSL = false;
+// SSL 사용 여부
+const useSSL = false;
 
-var cluster = require("cluster");
+// 클러스터 서버 import
+const cluster = require("cluster");
 
-var count_404 = 0;
+// 클러스트 부분
 if (cluster.isMaster) {
     for (let i=0; i<4; i++) {
         let worker = cluster.fork();
@@ -10,28 +12,33 @@ if (cluster.isMaster) {
             console.log("#"+worker.process.pid+": " + message);
         });
     }
+
     cluster.on('exit', function(worker, code, signal) {
 		console.log('worker ' + worker.process.pid + ' died');
         cluster.fork();
 	});
 
 } else {
+    // Master가 아니면 Slave 역할 하기
     doSlave();
 }
 
 function doSlave() {
-    // Mongoose init
+    // Mongoose 초기화
     var mongoose = require("mongoose");
     var db = mongoose.connection;
+
+    // MongoDB 서버 오픈 이벤트
     db.once("open", function(){
         console.log("Connected to mongod server");
     });
     
+    // 연결
     mongoose.connect("mongodb://localhost/db1");
     mongoose.Promise = global.Promise;
 
+    // 모듈들을 import
     var Article = require("./models/article.js")(mongoose);
-    // Express.js init
     var http = require("http");
     var https = require("https");
     var fs = require("fs");
@@ -41,6 +48,8 @@ function doSlave() {
     // SSL init
     // 보안상으로 SSL 초기화 코드는 생략합니다
 
+
+    // Express.js 초기화
     var bodyParser = require('body-parser');
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
@@ -50,7 +59,7 @@ function doSlave() {
     app.use(express.static(__dirname + '/public'));
 
 
-
+    // SSL 사용하면 http로 접근 시 https로 접속하게 리다이렉트하기
     if (useSSL) {
         app.all("*", ensureSecure);
         function ensureSecure(req, res, next) {
@@ -61,6 +70,7 @@ function doSlave() {
         }
     }
 
+    // 서버 생성 및 Listening
     var server = http.createServer(app);
 
     server.listen(3000, function(){
@@ -68,6 +78,7 @@ function doSlave() {
         
     });
 
+    // SSL 사용 시 https 서버도 함께 열기
     if (useSSL) {
         var httpsServer = https.createServer(options, app);
         httpsServer.listen(443, function(){
@@ -76,5 +87,7 @@ function doSlave() {
     }
 
     let pid = process.pid;
+
+    // 라우터 사용
     var router = require("./router/router")(app, Article, pid);
 }
