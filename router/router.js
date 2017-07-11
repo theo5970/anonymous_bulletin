@@ -50,10 +50,6 @@ module.exports = (app, Article) => {
         return result;
     }
 
-    app.all('*', (req, res, next) => {
-        process.send("#" + process.pid + " had received response.");
-        next();
-    });
     // 메인 홈 요청
     app.get("/", (req, res, next) => {
         let article_count = 0;

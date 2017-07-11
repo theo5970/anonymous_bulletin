@@ -4,27 +4,33 @@ const useSSL = false;
 // config import
 const config = require("./utils/config");
 
-// 클러스터 서버 import
-const cluster = require("cluster");
+// 클러스트 사용할 경우
+if (config.useCluster) {
+    // 클러스터 서버 import
+    const cluster = require("cluster");
 
-// 클러스트 부분
-if (cluster.isMaster) {
-    for (let i = 0; i < config.cluster_count; i++) {
-        let worker = cluster.fork();
-        worker.on('message', function(message){
-            console.log("#" + worker.process.pid+": " + message);
+    // 클러스트 부분
+    if (cluster.isMaster) {
+        for (let i = 0; i < config.cluster_count; i++) {
+            let worker = cluster.fork();
+            worker.on('message', function(message){
+                console.log("#" + worker.process.pid+": " + message);
+            });
+        }
+
+        cluster.on('exit', function(worker, code, signal) {
+            console.log('worker ' + worker.process.pid + ' died');
+            cluster.fork();
         });
+
+    } else {
+        // Master가 아니면 Slave 역할 하기
+        doSlave();
     }
-
-    cluster.on('exit', function(worker, code, signal) {
-		console.log('worker ' + worker.process.pid + ' died');
-        cluster.fork();
-	});
-
 } else {
-    // Master가 아니면 Slave 역할 하기
     doSlave();
 }
+
 
 function doSlave() {
     // Mongoose 초기화
@@ -77,7 +83,11 @@ function doSlave() {
     var server = http.createServer(app);
 
     server.listen(config.http_port, function(){
-        process.send("HTTP server opening... port:"+config.http_port);
+        if (config.use_cluster) {
+            process.send("HTTP server opening... port:"+config.http_port);
+        } else {
+            console.log("HTTP server opening... port:"+config.http_port);
+        }
         
     });
 
@@ -85,12 +95,14 @@ function doSlave() {
     if (useSSL) {
         var httpsServer = https.createServer(options, app);
         httpsServer.listen(config.https_port, function(){
-            console.log("HTTPS server opening... port:"+config.https_port);
+            if (config.use_cluster) {
+                process.send("HTTPS server opening... port:"+config.https_port);
+            } else {
+                console.send("HTTPS server opening... port:"+config.https_port);
+            }
         });
     }
 
-    let pid = process.pid;
-
     // 라우터 사용
-    var router = require("./router/router")(app, Article, pid);
+    var router = require("./router/router")(app, Article);
 }

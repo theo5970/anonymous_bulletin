@@ -12,6 +12,9 @@ const config = {
     // 컬렉션 이름
     db_collection_name: "test",
 
+    // 클러스트 사용 여부
+    use_cluster: true,
+    
     // 클러스트 개수
     cluster_count: 4,
 
