@@ -3,7 +3,6 @@ module.exports = (app, Article) => {
 	// Article: MongoDB Custom Schema
 	
     // 모듈 import
-    var hub = require("clusterhub");
     var config = require("../utils/config");
     var dateToString = require("../utils/dts");
     var xss = require("../utils/xss");
@@ -380,7 +379,7 @@ module.exports = (app, Article) => {
         
         // id가 정수가 아니면 오류 리턴
         if (!(/^[0-9]+$/.test(req.params.id))) {
-            
+
             // 좀 참신하게 404 페이지를 표시하기
             res.render("error.ejs", 
                 {title: "404 NOT FOUND", 
