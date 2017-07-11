@@ -1,5 +1,5 @@
 # anonymous_bulletin
-node.js + express.js로 작성된 익명게시판입니다.
+node.js + express.js로 ** 매우 간단한 ** 익명게시판입니다.
 
 현재 천천히 구현 중이며 언제 완성될 지는 미지수입니다.
 
