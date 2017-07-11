@@ -1,5 +1,14 @@
 // 설정
 const config = {
+    // HTTP 포트
+    http_port: 3000,
+
+    // HTTPS 포트
+    https_port: 445,
+
+    // 클러스트 개수
+    cluster_count: 4,
+    
     // 메인화면에 나올 글 수 제한
     mainpage_limit: 25,
 

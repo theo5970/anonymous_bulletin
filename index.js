@@ -1,15 +1,18 @@
 // SSL 사용 여부
 const useSSL = false;
 
+// config import
+const config = require("./utils/config");
+
 // 클러스터 서버 import
 const cluster = require("cluster");
 
 // 클러스트 부분
 if (cluster.isMaster) {
-    for (let i=0; i<4; i++) {
+    for (let i = 0; i < config.cluster_count; i++) {
         let worker = cluster.fork();
         worker.on('message', function(message){
-            console.log("#"+worker.process.pid+": " + message);
+            console.log("#" + worker.process.pid+": " + message);
         });
     }
 
@@ -73,16 +76,16 @@ function doSlave() {
     // 서버 생성 및 Listening
     var server = http.createServer(app);
 
-    server.listen(3000, function(){
-        process.send("HTTP server opening... port:3000");
+    server.listen(config.http_port, function(){
+        process.send("HTTP server opening... port:"+config.http_port);
         
     });
 
     // SSL 사용 시 https 서버도 함께 열기
     if (useSSL) {
         var httpsServer = https.createServer(options, app);
-        httpsServer.listen(443, function(){
-            console.log("HTTPS server opening... port:443");
+        httpsServer.listen(config.https_port, function(){
+            console.log("HTTPS server opening... port:"+config.https_port);
         });
     }
 
