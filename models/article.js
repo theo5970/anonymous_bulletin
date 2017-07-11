@@ -1,3 +1,5 @@
+var config = require("../utils/config");
+
 module.exports = function(mongoose) {
     var Schema = mongoose.Schema;
 
@@ -13,5 +15,5 @@ module.exports = function(mongoose) {
         likes: [String]
     });
 
-    return mongoose.model("Article", articleSchema, "test");
+    return mongoose.model("Article", articleSchema, config.db_collection_name);
 }

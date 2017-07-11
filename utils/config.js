@@ -6,9 +6,15 @@ const config = {
     // HTTPS 포트
     https_port: 445,
 
+    // 데이터베이스 이름
+    db_name: "db1",
+
+    // 컬렉션 이름
+    db_collection_name: "test",
+
     // 클러스트 개수
     cluster_count: 4,
-    
+
     // 메인화면에 나올 글 수 제한
     mainpage_limit: 25,
 

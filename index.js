@@ -37,7 +37,7 @@ function doSlave() {
     });
     
     // 연결
-    mongoose.connect("mongodb://localhost/db1");
+    mongoose.connect("mongodb://localhost/" + config.db_name);
     mongoose.Promise = global.Promise;
 
     // 모듈들을 import
