@@ -12,7 +12,8 @@ use db1
 db.createCollection("test")
 db.test.insert({id: 1, title: "안녕하세요!" , context: "만나서 반갑습니다. 첫 번째 글이군요", time: new Date().getTime(), ip: "-", type: 0, likes: [], comments: []});
 db.test.createIndex({time: -1})
-db.test.createIndex({id: 1})
+db.test.createIndex({id: -1})
+db.test.createIndex({type: -1})
 ```
 
 ### 1-2. node.js 서버 셋팅
