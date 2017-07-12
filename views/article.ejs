@@ -45,17 +45,23 @@
             <ul class="pagination">
                 <% let condition1 = (current_page > 1); %>
                 <li class="<%= condition1 ? '' : 'disabled'%>">
-                    <a href="<%= condition1 ? ('/all?page='+start_view) : ''%>" aria-label="Previous" data-toggle="tooltip" data-placement="top" title="이전 페이지">
+                    <%
+                        let prev_page = Math.abs((start_view / 10 - 1) * 10);
+                        if (prev_page == 0) {
+                            prev_page = 1;
+                        }
+                    %>
+                    <a href="<%= condition1 ? ('/all?page='+prev_page) : ''%>" aria-label="Previous" data-toggle="tooltip" data-placement="top" title="이전 페이지">
                         <span aria-hidden="true">&laquo;</span>
                     </a>
                 </li>
             <% for (let i=start_view; i<=end_view; i++) { %>
-                <% if (i <= max_pages && i > 0) { %>
+                <% if (i < max_pages && i > 0) { %>
                 <li class="<%= (i == current_page) ? 'active' : 'disable'%>"><a href="<%='/all?page='+i%>"><%= i %></a></li>
                 <% } %>
             <% } %>
                 <% current_page = parseInt(current_page) %>
-                <% let condition2 = (current_page + 1) <= max_pages %>
+                <% let condition2 = (current_page + 1) < max_pages %>
                 <li class="<%= condition2 ? '' : 'disabled'%>">
                     <a href="<%=condition2 ? ('/all?page='+end_view) : ''%>" aria-label="Next"  data-toggle="tooltip" data-placement="top" title="다음 페이지">
                         <span aria-hidden="true">&raquo;</span>
@@ -123,17 +129,23 @@
             <ul class="pagination">
                 <% let condition1 = (current_page > 1); %>
                 <li class="<%= condition1 ? '' : 'disabled'%>">
-                    <a href="<%= condition1 ? ('/all?page='+start_view) : ''%>" aria-label="Previous" data-toggle="tooltip" data-placement="top" title="이전 페이지">
+                    <%
+                        let prev_page = Math.abs((start_view / 10 - 1) * 10);
+                        if (prev_page == 0) {
+                            prev_page = 1;
+                        }
+                    %>
+                    <a href="<%= condition1 ? ('/all?page='+prev_page) : ''%>" aria-label="Previous" data-toggle="tooltip" data-placement="top" title="이전 페이지">
                         <span aria-hidden="true">&laquo;</span>
                     </a>
                 </li>
             <% for (let i=start_view; i<=end_view; i++) { %>
-                <% if (i <= max_pages && i > 0) { %>
+                <% if (i < max_pages && i > 0) { %>
                 <li class="<%= (i == current_page) ? 'active' : 'disable'%>"><a href="<%='/all?page='+i%>"><%= i %></a></li>
                 <% } %>
             <% } %>
                 <% current_page = parseInt(current_page) %>
-                <% let condition2 = (current_page + 1) <= max_pages %>
+                <% let condition2 = (current_page + 1) < max_pages %>
                 <li class="<%= condition2 ? '' : 'disabled'%>">
                     <a href="<%=condition2 ? ('/all?page='+end_view) : ''%>" aria-label="Next"  data-toggle="tooltip" data-placement="top" title="다음 페이지">
                         <span aria-hidden="true">&raquo;</span>

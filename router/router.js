@@ -299,10 +299,18 @@ module.exports = (app, Article) => {
         let client_ip = CryptoJS.SHA256(getClientIP(req)).toString();
 
         if (query.page >= config.max_page) {
-            res.render("error.ejs", 
-                {title: "페이지 표시 오류", 
+            res.render("error.ejs", {
+                title: "페이지 표시 오류", 
                 context: "Error: "+config.max_page + " 페이지 이상은 표시하지 않습니다."
-                });
+            });
+            return;
+        }
+
+        if (query.page <= 0) {
+            res.render("error.ejs",{
+                title: "페이지 표시 오류",
+                context: "Error: 0 이하의 페이지는 표시할 수 없습니다"
+            });
             return;
         }
 
@@ -360,7 +368,7 @@ module.exports = (app, Article) => {
                     current_page: current_page, 
                     all_pages: all_pages,
                     self_likes: self_likes,
-                    start_view: Math.floor(current_page / 10) * 10 - 1,
+                    start_view: Math.floor(current_page / 10) * 10,
                     end_view: Math.floor(current_page / 10) * 10 + 10,
                     eachpage_count: config.eachpage_count
                 });
