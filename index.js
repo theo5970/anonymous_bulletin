@@ -9,9 +9,9 @@ if (config.use_cluster) {
     // 클러스터 서버 import
     const cluster = require("cluster");
 
-    console.log("Cluster on!");
     // 클러스트 부분
     if (cluster.isMaster) {
+        console.log("Master on! cluster count: " + config.cluster_count);
         for (let i = 0; i < config.cluster_count; i++) {
             let worker = cluster.fork();
             worker.on('message', function(message){
@@ -29,6 +29,7 @@ if (config.use_cluster) {
         doSlave();
     }
 } else {
+    console.log("Self mode.");
     doSlave();
 }
 
@@ -38,14 +39,13 @@ function doSlave() {
     var mongoose = require("mongoose");
     var db = mongoose.connection;
 
-    // MongoDB 서버 오픈 이벤트
-    db.once("open", function(){
+    // MongoDB에 연결
+    var promise = mongoose.connect("mongodb://localhost/" + config.db_name, {useMongoClient: true}, (err) => {
+        if (err) {
+            console.error(err);
+        }
         console.log("Connected to mongod server");
     });
-    
-    // 연결
-    mongoose.connect("mongodb://localhost/" + config.db_name);
-    mongoose.Promise = global.Promise;
 
     // 모듈들을 import
     var Article = require("./models/article.js")(mongoose);
