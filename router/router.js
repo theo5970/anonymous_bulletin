@@ -52,7 +52,7 @@ module.exports = (app, Article) => {
 
     // 메인 홈 요청
     app.get("/", (req, res, next) => {
-        let article_count = 0;
+        let article_count = 0;      // 전체 게시물 수
         let normalArticles = [];    // 일반 게시물
         let noticeArticles = [];    // 공지사항 게시물
 
@@ -62,24 +62,28 @@ module.exports = (app, Article) => {
             }
 
             article_count = count;
-
+            
+            // id 를 내림차순 정렬하고 첫페이지에 표시할 만큼 끊는다
             Article.find().sort({id: -1})
             .limit(config.mainpage_limit).exec((err, list) => {
                 if (err) {
                     console.log(err);
                 }
                 normalArticles = list;
-                second();  // 두번째로 실행되는 함수
+                second();  // 두번째로 실행되는 함수를 호출
             });
         });
 
         let second = () => {
-            // type=1(공지사항)인 게시물을 찾아서 정렬
+            // type=1 (공지사항)인 글을 찾아서 정렬
             Article.aggregate([
                 {$sort: {type: -1}},
                 {$match: {type: 1.0}}
             ]).exec((err, list) => {
+                // 공지사항 글 리스트 설정
                 noticeArticles = list;
+
+                // 공지사항 글이 하나라도 없으면 비워둔다
                 if (!noticeArticles) {
                     noticeArticles = [];
                 }
@@ -91,9 +95,16 @@ module.exports = (app, Article) => {
                 // 렌더링
                 res.render("index.ejs", 
                 {
+                    // 일반 글 리스트
                     articles: normalArticles, 
+
+                    // 공지사항 글 리스트
                     notices: noticeArticles, 
+
+                    // 주관적인 시간 함수
                     subjective_time: subjective_time,
+
+                    // 전체 게시물 수
                     article_count: article_count
                 });
                 next();
@@ -126,13 +137,28 @@ module.exports = (app, Article) => {
         func = () => {
             // 새로운 글 객체
             let new_article = new Article({
+                // 글 id : 글 개수 + 1
                 id: article_count + 1,
+
+                // 글 제목
                 title: data.title,
+
+                // 글 내용
                 context: xss.filterContext(data.context),   // XSS 필터
+
+                // 글이 작성된 날짜/시간
                 time: new Date().getTime(),
+
+                // 글을 작성한 클라이언트의 IP
                 ip: CryptoJS.SHA256(client_ip), // IP 해시화
+
+                // 글이 공지사항인지 확인하는 것 (type=0 : 일반, type=1 : 공지)
                 type: 0,  
+
+                // 좋아요를 누른 클라이언트의 IP 리스트 (해시화됨)
                 likes: [],
+
+                // 댓글 리스트
                 comments: [],
 
                 // 비밀번호가 있으면 그대로, 없으면 undefined로 바꾼다.
@@ -200,8 +226,11 @@ module.exports = (app, Article) => {
             count: 0,
             isLiked: false
         };
+
+        // 고유 id
         let dbid = req.body._id;
-              
+        
+        // DB에서 고유 id와 일치하는 게시물을 하나 찾는다
         Article.findOne({_id: dbid}, (err, article) => {
             let client_ip = CryptoJS.SHA256(getClientIP(req)).toString();   // IP 암호화
             let article_ip = CryptoJS.SHA256(article.ip).toString();        // IP 암호화
@@ -223,10 +252,13 @@ module.exports = (app, Article) => {
                 }
                 
                 result.isLiked = isLike;
+
+                // 좋아요를 했다가 취소할 수 있도록 함
                 result.count = article.likes.length + (isLike ? 1 : -1);
                 sendResult();
             });
             
+            // 결과를 클라이언트에 전송한다
             function sendResult() {
                 res.send(result);
                 next();
@@ -381,16 +413,35 @@ module.exports = (app, Article) => {
 
                 // 최종 렌더링
                 res.render("article.ejs", 
-                { 
-                    isFindMulti: true,  // 여러개를 표시
+                {
+                    // 여러 개를 출력한다
+                    isFindMulti: true,
+
+                    // 글 리스트
                     articles: list, 
+
+                    // Date 객체를 문자열로 표현하는 함수
                     dateToString: dateToString.convert, 
-                    current_page: current_page, 
+
+                    // 현재 페이지
+                    current_page: current_page,
+
+                    // 전체 페이지 수 
                     all_pages: all_pages,
+
+                    // 최대 페이징 가능한 페이지 수
                     max_pages: config.max_page,
+
+                    // 클라이언트 자신이 좋아요 한 글 리스트
                     self_likes: self_likes,
+
+                    // 페이징 시작점
                     start_view: Math.floor(current_page / 10) * 10,
+
+                    // 페이징 종점
                     end_view: Math.floor(current_page / 10) * 10 + 10,
+
+                    // 각각 페이지에 표시할 글 수
                     eachpage_count: config.eachpage_count
                 });
             });
@@ -429,9 +480,16 @@ module.exports = (app, Article) => {
                 // 렌더링
                 res.render("article.ejs", 
                 {
+                    // 한 개만 표시한다
                     isFindMulti: false,
+
+                    // 글 리스트
                     articles: list,
+
+                    // Date 객체를 문자열로 변환
                     dateToString: dateToString.convert,
+
+                    // 클라이언트 자신이 좋아요 한 글 리스트
                     self_likes: self_likes
                 });
             } else {
