@@ -57,7 +57,7 @@
             <br/>
             <button class="btn btn-primary" onclick="location.href='/'">돌아가기</button>
             <hr/>
-            <% if (isFindMulti) { %>
+            <% if (isFindMulti && articles.length > 0) { %>
             <ul class="pagination">
                 <% let condition1 = (current_page > 1); %>
                 <li class="<%= condition1 ? '' : 'disabled'%>">
@@ -72,8 +72,8 @@
                     </a>
                 </li>
             <% for (let i=start_view; i<=end_view; i++) { %>
-                <% if (i < max_pages && i > 0) { %>
-                <li class="<%= (i == current_page) ? 'active' : 'disable'%>"><a href="<%='/all?page='+i%>"><%= i %></a></li>
+                <% if ((i <= all_pages && i <= eachpage_count) && i > 0) { %>
+                <li class="<%= (i == current_page) ? 'active' : 'disable'%>"><a href="<%='/all/'+i%>"><%= i %></a></li>
                 <% } %>
             <% } %>
                 <% current_page = parseInt(current_page) %>
@@ -143,7 +143,7 @@
                 </div>
             </div>
             <% } %>
-            <% if (isFindMulti) { %>
+            <% if (isFindMulti && articles.length > 0) { %>
             <ul class="pagination">
                 <% let condition1 = (current_page > 1); %>
                 <li class="<%= condition1 ? '' : 'disabled'%>">
@@ -158,8 +158,8 @@
                     </a>
                 </li>
             <% for (let i=start_view; i<=end_view; i++) { %>
-                <% if (i < max_pages && i > 0) { %>
-                <li class="<%= (i == current_page) ? 'active' : 'disable'%>"><a href="<%='/all?page='+i%>"><%= i %></a></li>
+                <% if ((i <= all_pages && i <= eachpage_count) && i > 0) { %>
+                <li class="<%= (i == current_page) ? 'active' : 'disable'%>"><a href="<%='/all/'+i%>"><%= i %></a></li>
                 <% } %>
             <% } %>
                 <% current_page = parseInt(current_page) %>

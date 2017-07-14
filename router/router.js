@@ -318,8 +318,6 @@ module.exports = (app, Article) => {
         // 현재 페이지 (기본: 1)
         let current_page = 1;
 
-        let options = [];
-
         // 클라이언트 IP 해시화한거
         let client_ip = CryptoJS.SHA256(getClientIP(req)).toString();
 
@@ -347,8 +345,8 @@ module.exports = (app, Article) => {
                 // 전체 글 개수
                 length = articles_count;
 
-                // 전체 페이지 개수
-                max_pages = config.max_page;
+                // 전체 페이지 수
+                all_pages = Math.ceil(length / config.eachpage_count);
 
                 // 현재 페이지 값
                 current_page = (req_page !== undefined) ? req_page : 1;
@@ -389,6 +387,7 @@ module.exports = (app, Article) => {
                     dateToString: dateToString.convert, 
                     current_page: current_page, 
                     all_pages: all_pages,
+                    max_pages: config.max_page,
                     self_likes: self_likes,
                     start_view: Math.floor(current_page / 10) * 10,
                     end_view: Math.floor(current_page / 10) * 10 + 10,
