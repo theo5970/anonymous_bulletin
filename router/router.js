@@ -454,7 +454,7 @@ module.exports = (app, Article) => {
         let client_ip = CryptoJS.SHA256(getClientIP(req)).toString();
          
         // id가 정수가 아니면 오류 리턴
-        if (!Number.isInteger(req.params.id)) {
+        if (!(/^\+?(0|[1-9]\d*)$/.test(req.params.id))) {
 
             // 좀 참신하게 404 페이지를 표시하기
             res.render("error.ejs", 
