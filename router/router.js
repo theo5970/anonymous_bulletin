@@ -134,10 +134,10 @@ module.exports = (app, Article) => {
                 type: 0,  
                 likes: [],
                 comments: [],
+
+                // 비밀번호가 있으면 그대로, 없으면 undefined로 바꾼다.
                 password: data.password.length > 0 ? data.password : undefined
             });
-
-            process.send(new_article.password);
 
             // 서버에 보낼 결과
             let result = 
@@ -177,7 +177,6 @@ module.exports = (app, Article) => {
             if (result.isSuccess) {
                 // 비밀번호를 해시화한다.
                 if (new_article.password !== undefined) {
-                    process.send(new_article.password);
                     new_article.password = CryptoJS.SHA256(new_article.password);
                 }
 
@@ -368,9 +367,6 @@ module.exports = (app, Article) => {
             // 시간 순으로 정렬하고
             // 계산된 페이지로 인덱싱하고 실행
 
-            process.send([skip_count, limit_count]);
-
-            
             Article.aggregate([
             {"$sort": {"time": -1}},
             {"$skip": skip_count},
@@ -449,6 +445,7 @@ module.exports = (app, Article) => {
         });
     });
 
+    // 글 삭제 요청
     app.post("/delete_article", (req, res) => {
         // 요청 결과
         let result = {
@@ -456,27 +453,35 @@ module.exports = (app, Article) => {
             messages: []
         }
 
+        // 고유 _id
         let req_id = req.body._id;
-        process.send(req.body.password);
+        // 비밀번호
         let req_password = CryptoJS.SHA256(req.body.password).toString();
 
+        // Article에서 해당되는 글 하나를 찾는다
         Article.findOne({_id: req_id}, (err, article) => {
-            process.send(article);
+            // 실제 비밀번호
             let article_password = article.password;
 
-            process.send(req_password);
-            process.send(article_password);
+            // 비밀번호가 있으면 Words -> String 작업
             if (article_password !== undefined) {
                 article_password = article_password.toString();
             } else {
+                // 비밀번호가 없으면 실패로 넘기기
                 result.isSuccess = false;
                 result.messages.push("비밀번호가 없는 글입니다");
                 res.send(result);
                 return;
             }
+
+            // 요청한 비밀번호가 실제 비밀번호와 일치하는 지 확인
             if (req_password === article_password) {
+
+                // 일치하면 삭제
                 Article.remove({_id: req_id}).exec();
             } else {
+
+                // 그렇지 않으면 실패로 내보내기
                 result.isSuccess = false;
                 result.messages.push("비밀번호가 일치하지 않습니다");
             }
