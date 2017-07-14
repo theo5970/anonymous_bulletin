@@ -402,8 +402,13 @@ module.exports = (app, Article) => {
         // 해시화된 클라이언트 IP
         let client_ip = CryptoJS.SHA256(getClientIP(req)).toString();
         
+        // 정수가 아닌지 확인 (추후에 utils로 옮겨질 것)
+        let isInt = (x) => {
+            return (typeof x === "number" && x % 1 === 0);
+        };
+        
         // id가 정수가 아니면 오류 리턴
-        if (!(/^[0-9]+$/.test(req.params.id))) {
+        if (isInt(req.params.id)) {
 
             // 좀 참신하게 404 페이지를 표시하기
             res.render("error.ejs", 
