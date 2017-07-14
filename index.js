@@ -66,7 +66,7 @@ function doSlave() {
 
     app.set("views", __dirname + "/views");
     app.set("view engine", "html");
-    app.use(express.static(__dirname + '/public'));
+    app.use("/public", express.static(__dirname + '/public'));
 
 
     // SSL 사용하면 http로 접근 시 https로 접속하게 리다이렉트하기

@@ -133,8 +133,11 @@ module.exports = (app, Article) => {
                 ip: CryptoJS.SHA256(client_ip), // IP 해시화
                 type: 0,  
                 likes: [],
-                comments: []
+                comments: [],
+                password: data.password.length > 0 ? data.password : undefined
             });
+
+            process.send(new_article.password);
 
             // 서버에 보낼 결과
             let result = 
@@ -143,6 +146,17 @@ module.exports = (app, Article) => {
                 messages: []
             }
             
+
+            // 비밀번호가 1자리 수 이상이면 (0인 경우는 없는 경우로 간주하여 무시한다)
+            if (new_article.password !== undefined) {
+                // 비밀번호가 너무 짧거나 길다면
+                if (new_article.password.length < config.min_password_length
+                    || new_article.password.length > config.max_password_length) {
+                    
+                    result.isSuccess = false;
+                    result.messages.push("비밀번호가 너무 짧거나 깁니다")
+                }
+            }
             // 제목이 너무 짧거나 길다면
             if (new_article.title.length < config.min_article_title_length 
                 || new_article.title.length > config.max_article_title_length) {
@@ -161,6 +175,12 @@ module.exports = (app, Article) => {
             
             // 결과가 성공이라면
             if (result.isSuccess) {
+                // 비밀번호를 해시화한다.
+                if (new_article.password !== undefined) {
+                    process.send(new_article.password);
+                    new_article.password = CryptoJS.SHA256(new_article.password);
+                }
+
                 // DB에 저장한다
                 new_article.save(function(err){
                     if (err) {
@@ -279,10 +299,16 @@ module.exports = (app, Article) => {
         
         
     });
-    // 모든 글을 표시하기
+
+    // 그냥 /all 만 요청했을 시 /all/1로 보내기
     app.get("/all", (req, res) => {
-        // URL 쿼리 (?pages=n)
-        let query = req.query;
+        res.redirect("/all/1");
+    });
+
+    // 모든 글을 표시하기
+    app.get("/all/:page", (req, res) => {
+        // 요청한 페이지
+        let req_page = Number(req.params.page);
 
         // 글 개수
         let length = 0;
@@ -298,7 +324,7 @@ module.exports = (app, Article) => {
         // 클라이언트 IP 해시화한거
         let client_ip = CryptoJS.SHA256(getClientIP(req)).toString();
 
-        if (query.page >= config.max_page) {
+        if (req_page >= config.max_page) {
             res.render("error.ejs", {
                 title: "페이지 표시 오류", 
                 context: "Error: "+config.max_page + " 페이지 이상은 표시하지 않습니다."
@@ -306,7 +332,7 @@ module.exports = (app, Article) => {
             return;
         }
 
-        if (query.page <= 0) {
+        if (req_page <= 0) {
             res.render("error.ejs",{
                 title: "페이지 표시 오류",
                 context: "Error: 0 이하의 페이지는 표시할 수 없습니다"
@@ -326,7 +352,7 @@ module.exports = (app, Article) => {
                 max_pages = config.max_page;
 
                 // 현재 페이지 값
-                current_page = (query.page !== undefined) ? query.page : 1;
+                current_page = (req_page !== undefined) ? req_page : 1;
                 
                 // MongoDB에서 skip 값
                 let start = (current_page - 1) * config.eachpage_count;
@@ -421,5 +447,43 @@ module.exports = (app, Article) => {
                 });
             }
         });
+    });
+
+    app.post("/delete_article", (req, res) => {
+        // 요청 결과
+        let result = {
+            isSuccess: true,
+            messages: []
+        }
+
+        let req_id = req.body._id;
+        process.send(req.body.password);
+        let req_password = CryptoJS.SHA256(req.body.password).toString();
+
+        Article.findOne({_id: req_id}, (err, article) => {
+            process.send(article);
+            let article_password = article.password;
+
+            process.send(req_password);
+            process.send(article_password);
+            if (article_password !== undefined) {
+                article_password = article_password.toString();
+            } else {
+                result.isSuccess = false;
+                result.messages.push("비밀번호가 없는 글입니다");
+                res.send(result);
+                return;
+            }
+            if (req_password === article_password) {
+                Article.remove({_id: req_id}).exec();
+            } else {
+                result.isSuccess = false;
+                result.messages.push("비밀번호가 일치하지 않습니다");
+            }
+
+            res.send(result);
+        });
+
+        
     });
 }

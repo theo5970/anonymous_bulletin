@@ -64,3 +64,34 @@ function doLike(article_dbid) {
         }
     })
 }
+
+let delete_id = "";
+
+// 글 지우기 폼 띄우기
+function doDelete(id) {
+    delete_id = id;
+    $("#delete_modal").modal("show");
+}
+
+function realDelete() {
+    $.ajax({
+        type: "post",
+        url: "/delete_article",
+        dataType: "json",
+        success: function(data) {
+            if (data.isSuccess) {
+                alert("성공적으로 글이 삭제되었습니다");
+                location.href="/";
+            } else {
+                let message = data.messages.join('\n');
+                alert(message);
+            }
+            // delete_modal_password 내용을 비운다
+            $("input[id=delete_modal_password]").val("");
+        },
+        data: {
+            _id: delete_id,
+            password: $("input[id=delete_modal_password]").val()
+        }
+    });
+}

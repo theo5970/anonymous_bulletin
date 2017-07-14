@@ -30,7 +30,8 @@ function postArticle() {
         // 서버에 보낼 데이터
         data: {
             title: $("input[id=titleText]").val(),      // 글 제목
-            context: $("textarea#contextText").val()    // 글 내용
+            context: $("textarea#contextText").val(),    // 글 내용
+            password: $("input[id=passwordText]").val()
         }
     });
 }

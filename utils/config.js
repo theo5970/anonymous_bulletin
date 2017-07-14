@@ -29,9 +29,13 @@ const config = {
     min_article_context_length: 10,
     max_article_context_length: 2000,
 
-    // 최소, 최소 댓글 내용 길이
+    // 최소, 최대 댓글 내용 길이
     min_comment_length: 1,
     max_comment_length: 500,
+
+    // 최소, 최대 비밀번호 자리 수
+    min_password_length: 6,
+    max_password_length: 30,
 
     // 글 모두 볼 때 각각의 페이지에 표시할 글 개수
     eachpage_count: 20,

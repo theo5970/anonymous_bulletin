@@ -12,7 +12,8 @@ module.exports = function(mongoose) {
         comments: [],
         type: Number,
         ip: String,
-        likes: [String]
+        likes: [String],
+        password: String
     });
 
     return mongoose.model("Article", articleSchema, config.db_collection_name);
